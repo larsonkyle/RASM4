@@ -65,13 +65,13 @@ findSubstringLoop:
                                        //So convert to lowercase 
     findSubstringIgnoreCase2:    
     
-    //Check for null char in full string byte (IF NULL, RETURN FALSE)
-    cmp W4, #0             //cmp full string byte to null
-    beq findSubstringFalse //If null, RETURN FALSE
-
     //Check for null char in substring byte (IF NULL, RETURN TRUE)
     cmp W5, #0             //cmp substring byte to null
     beq findSubstringTrue  //if null, RETURN TRUE
+
+    //Check for null char in full string byte (IF NULL, RETURN FALSE)
+    cmp W4, #0             //cmp full string byte to null
+    beq findSubstringFalse //If null, RETURN FALSE
 
     //Check if bytes are equal or not
     //If bytes aren't equal, then fall through the loop and continue to outer loop.
