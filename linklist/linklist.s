@@ -1,6 +1,7 @@
     .global insert_into
     .global print_list
     .global free_list
+    .global search_for
 
 /*
 insert_into - insert string into linked list
