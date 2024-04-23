@@ -1,6 +1,5 @@
   .global findSubstring
 
-
 /*
   Parameters:
     - X0: Address of full string

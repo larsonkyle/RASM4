@@ -11,11 +11,13 @@
     chFB:       .byte       91
     chBB:       .byte       93
 
+    .text
+
 /*
 insert_into - insert string into linked list
 
 parameters:
-x0 - string address
+x0 - address of dyn alloc string
 x1 - headPtr
 x2 - tailPtr
 
@@ -37,14 +39,18 @@ insert_into:
     str     X28,[SP, #-16]!
     str     X29,[SP, #-16]!
 
-    str     x1,[SP, #-16]!
-    str     x2,[SP, #-16]!
+    str     x1,[SP, #-16]!  // push headPtr to the stack
+    str     x2,[SP, #-16]!  // push tailPtr to the stack
     
+    str     x0,[SP, #-16]!  // store address of dyn alloc string to the stack
     // Step 1a. Get the length of the string (+1 to account for the null at the end)
     // Step 1b. Pass the length to malloc, and copy the string into the new malloc'd string. You have to remember where this is
     //          is so its probably best to store in a label or temp register.
     bl      String_copy     // copy string and return new string address
+    ldr     x1,[SP],#16     // pop the address of dyn alloc string off thes tack
     str     x0,[SP,#-16]!   // push the new string address to the stack
+    mov     x0,x1           // mov old string address in x0
+    bl      free            // free the old string address
 
     // Step 2a. Malloc 16 bytes (8 bytes for the &data element and 8 bytes for the &next element) for the newNode.
     mov     x0,#16          // load 16 bytes into x0 - bytes needed for one node (two pointers)
@@ -62,16 +68,15 @@ insert_into:
     mov     x0,x2           // load unchanged new node address into x0
 
     // Step 2c. Insert the newNode into the linked list.
-    ldr     x2,[SP],#16
+    ldr     x1,[SP],#16     // load tailPtr into x1
     ldr     x2,[x1]         // load tail node address into x2
 
     str     x0,[x1]         // store new node address in tail pointer
 
-    ldr     x1,[SP],#16
-    mov     x3,x1
-    ldr     x1,[x1]         // load head in x1
+    ldr     x1,[SP],#16     // load headPtr into x1
+    ldr     x3,[x1]         // load head in x3
 
-    cmp     x1,#0                   // if head == null,
+    cmp     x3,#0                   // if head == null,
     beq     insert_into_init_head   // make new node head
 
     str     x0,[x2,#8]              // store the address of the current node in the next pointer of the previous node
@@ -80,7 +85,7 @@ insert_into:
     b       insert_into_return      // go to return statement
 
 insert_into_init_head:
-    str     x0,[x3]         // store new node address in head pointer
+    str     x0,[x1]         // store new node address in head pointer
 
 insert_into_return:
     ldr     X29,[SP],#16    // preserved required AAPCS registers
@@ -260,7 +265,7 @@ with a line feed before the null terminator. If the string already has a line fe
 null terminator, the same string address that was passed is returned (never changed).
 
 parameters:
-x0 - string address
+x0 - address of dyn alloc string
 
 return:
 x0 - new string address
@@ -283,62 +288,57 @@ append_line_feed:
     str     X28,[SP, #-16]!
     str     X29,[SP, #-16]!
 
-    mov     x1,x0           // copy the string into x1
+    mov     x1,x0           // move the string into x1
     add     x1,x1,#1        // increment the address of the string (forward pointer)
-    mov     x2,x0           // copy the string into x2 and don't increment address (back pointer)
-
-    mov     x5,#0           // initialize counter to #0
+    mov     x2,x0           // move the string into x2 and don't increment address (back pointer)
 
 append_line_feed_loop:
-    ldrb    w3,[x1],#1
-    ldrb    w4,[x2],#1
+    ldrb    w3,[x1],#1      // load next byte in forward pointer
+    ldrb    w4,[x2],#1      // load next byte in back pointer
 
-    add     x5,x5,#1
+    cmp     w3,#0                   // if forward pointer == 0
+    beq     check_line_feed         // check if we need to append line feed
 
-    cmp     w3,#0
-    beq     check_line_feed
-
-    b       append_line_feed_loop
+    b       append_line_feed_loop   // else, continue loop
 
 check_line_feed:
+    cmp     w4,#10                      // if back pointer == line feed
+    beq     append_line_feed_return     // no need to append line feed
+    str     x0,[SP, #-16]!              // push the original string to the stack
 
-    cmp     w4,#10
-    beq     append_line_feed_return
+    bl      String_length               // get the length of original string
+    add     x0,x0,#2                    // length + 1 for line feed + 1 for null
+    
+    bl      malloc                      // address of dyn alloc mem in x0
 
-    add     x5,x5,#1
+    ldr     x1,[SP],#16                 // pop original string off the stack
 
-    str     x0,[SP, #-16]!
-    mov     x5,x0
-    bl      malloc
-
-    ldr     x1,[SP],#16
-
-    mov     x2,x0
-    mov     x3,x1
+    mov     x2,x0                       // move the new string into x2
+    mov     x3,x1                       // move the old string into x3
 
 add_line_feed_loop:
-    ldrb    w4,[x3],#1
+    ldrb    w4,[x3],#1              // load byte from old string
 
-    cmp     w4,#0
-    beq     add_line_feed
+    cmp     w4,#0                   // if that byte == 0
+    beq     add_line_feed           // go append the line feed and null terminator manually
 
-    strb    w4,[x2],#1
+    strb    w4,[x2],#1              // else, store byte into new string
 
-    b       add_line_feed_loop
+    b       add_line_feed_loop      // continue loop
 
 add_line_feed:
-    mov     w4,#10
-    strb    w4,[x2],#1
+    mov     w4,#10                  // move line feed into w4
+    strb    w4,[x2],#1              // store line feed into new string
 
-    mov     w4,#0
-    strb    w4,[x2]
+    mov     w4,#0                   // move null terminator into w4
+    strb    w4,[x2]                 // store null terminator into new string
 
-    str     x0,[SP, #-16]!
+    str     x0,[SP, #-16]!          // push new string to the stack
 
-    mov     x0,x1
-    bl      free
+    mov     x0,x1                   // move old string to x0
+    bl      free                    // free old string
 
-    ldr     x0,[SP],#16
+    ldr     x0,[SP],#16             // pop new string off the stack
 
 append_line_feed_return:
     ldr     X29,[SP],#16    // preserved required AAPCS registers

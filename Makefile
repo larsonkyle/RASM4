@@ -6,11 +6,11 @@ driver: RASM4.o linklist.o findSubstring.o
 RASM4.o: RASM4.s
 	as -g -o RASM4.o RASM4.s
 
-linklist.o: linklist/linklist.s
-	as -g -o linklist/linklist.o linklist/linklist.s
-
 findSubstring.o: findSubstring/findSubstring.s
 	as -g -o findSubstring/findSubstring.o findSubstring/findSubstring.s
+
+linklist.o: linklist/linklist.s
+	as -g -o linklist/linklist.o linklist/linklist.s
 
 clean: 
 	rm linklist/linklist.o findSubstring/findSubstring.o RASM4.o driver
