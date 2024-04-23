@@ -6,10 +6,10 @@
 
     .data
 
-    numBuf:     .skip       21
-    chSP:       .byte       32
-    chFB:       .byte       91
-    chBB:       .byte       93
+numBuf:     .skip       21
+chSP:       .byte       32
+chFB:       .byte       91
+chBB:       .byte       93
 
     .text
 
@@ -18,6 +18,10 @@ insert_into - insert string into linked list
 
 parameters:
 x0 - address of dyn alloc string
+x1 - headPtr
+x2 - tailPtr
+
+return:
 x1 - headPtr
 x2 - tailPtr
 
@@ -42,15 +46,11 @@ insert_into:
     str     x1,[SP, #-16]!  // push headPtr to the stack
     str     x2,[SP, #-16]!  // push tailPtr to the stack
     
-    str     x0,[SP, #-16]!  // store address of dyn alloc string to the stack
     // Step 1a. Get the length of the string (+1 to account for the null at the end)
     // Step 1b. Pass the length to malloc, and copy the string into the new malloc'd string. You have to remember where this is
     //          is so its probably best to store in a label or temp register.
     bl      String_copy     // copy string and return new string address
-    ldr     x1,[SP],#16     // pop the address of dyn alloc string off thes tack
     str     x0,[SP,#-16]!   // push the new string address to the stack
-    mov     x0,x1           // mov old string address in x0
-    bl      free            // free the old string address
 
     // Step 2a. Malloc 16 bytes (8 bytes for the &data element and 8 bytes for the &next element) for the newNode.
     mov     x0,#16          // load 16 bytes into x0 - bytes needed for one node (two pointers)
@@ -58,7 +58,7 @@ insert_into:
 
     // Step 2b. Store the address of previously malloc'd string in the newNode along with setting the next element to null.
     ldr     x1,[SP],#16     // pop copied string address off the stack into x1
-    mov     x2,x0           // move new node address into x3
+    mov     x2,x0           // move new node address into x2
 
     str     x1,[x0],#8      // store copied string address to the new node and increment #8 so we can move on to handling the nex pointer
 
@@ -72,8 +72,10 @@ insert_into:
     ldr     x2,[x1]         // load tail node address into x2
 
     str     x0,[x1]         // store new node address in tail pointer
+    mov     x4,x1           // move updated tail pointer to x4 so we can save it
 
     ldr     x1,[SP],#16     // load headPtr into x1
+    str     x4,[SP, #-16]!  // push tail pointer to the stack
     ldr     x3,[x1]         // load head in x3
 
     cmp     x3,#0                   // if head == null,
@@ -88,6 +90,8 @@ insert_into_init_head:
     str     x0,[x1]         // store new node address in head pointer
 
 insert_into_return:
+    ldr     x2,[SP],#16     // pop tail pointer off the stack
+
     ldr     X29,[SP],#16    // preserved required AAPCS registers
     ldr     X28,[SP],#16
     ldr     X27,[SP],#16
@@ -128,8 +132,8 @@ loop:
     str     x0,[SP,#-16]!   // push current node address to the stack again
 
     mov     x0,x1           // move index coutner to x0
-    ldr     x1,=numBuf      // load number buffer into x1
-    bl      int64asc        // store index counter as a string in the number buffer
+    ldr     x1,=numBuf      // load number numBuf into x1
+    bl      int64asc        // store index counter as a string in the number numBuf
 
     ldr     x0,=chFB        // load front bracket into x0
     bl      putch           // output front bracket
@@ -138,7 +142,7 @@ loop:
     bl      putstring       // output the index of the current node
 
     ldr     x0,=chBB        // load back bracket into x0
-    bl      putstring       // output back bracket
+    bl      putch           // output back bracket
 
     ldr     x0,=chSP        // load space into x0
     bl      putch           // output space
@@ -190,7 +194,7 @@ free_loop:
     beq     free_return     // end loop
 
     ldr     x1,[x0]         // load the string of the current node
-    ldr     x2,[x0,#8]      // load the pointer to the next node in x2
+    ldr     x2,[x0,#8]      // load the next node into x2
 
     str     x2,[SP,#-16]!   // push the next node to the stack
     str     x1,[SP,#-16]!   // push the string to the stack
@@ -200,7 +204,7 @@ free_loop:
     ldr     x0,[SP],#16     // pop the string off the stack
     bl      free            // free the current string
 
-    ldr     x0,[SP],#16     // pop the next node pointer
+    ldr     x0,[SP],#16     // pop the next node
     b       free_loop       // continue loop
 
 free_return:
@@ -302,43 +306,17 @@ append_line_feed_loop:
     b       append_line_feed_loop   // else, continue loop
 
 check_line_feed:
+    cmp     w4,#0                       // if backward pointer == 0
+    beq     append_line_feed_return     // string is empty, so don't append a line feed
+
     cmp     w4,#10                      // if back pointer == line feed
     beq     append_line_feed_return     // no need to append line feed
-    str     x0,[SP, #-16]!              // push the original string to the stack
 
-    bl      String_length               // get the length of original string
-    add     x0,x0,#2                    // length + 1 for line feed + 1 for null
-    
-    bl      malloc                      // address of dyn alloc mem in x0
-
-    ldr     x1,[SP],#16                 // pop original string off the stack
-
-    mov     x2,x0                       // move the new string into x2
-    mov     x3,x1                       // move the old string into x3
-
-add_line_feed_loop:
-    ldrb    w4,[x3],#1              // load byte from old string
-
-    cmp     w4,#0                   // if that byte == 0
-    beq     add_line_feed           // go append the line feed and null terminator manually
-
-    strb    w4,[x2],#1              // else, store byte into new string
-
-    b       add_line_feed_loop      // continue loop
-
-add_line_feed:
     mov     w4,#10                  // move line feed into w4
     strb    w4,[x2],#1              // store line feed into new string
 
     mov     w4,#0                   // move null terminator into w4
     strb    w4,[x2]                 // store null terminator into new string
-
-    str     x0,[SP, #-16]!          // push new string to the stack
-
-    mov     x0,x1                   // move old string to x0
-    bl      free                    // free old string
-
-    ldr     x0,[SP],#16             // pop new string off the stack
 
 append_line_feed_return:
     ldr     X29,[SP],#16    // preserved required AAPCS registers
