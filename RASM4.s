@@ -1,54 +1,29 @@
     .global _start
+    .global menuBuf
 
-.equ        DFD,            -100        // DFD
-.equ        READ,           0100        // flags
-.equ        WRITE,          0101        // flags
-.equ        RW_______,      0600        // mode
+.equ        DFD,            -100        // directory file descriptor (DFD)
+.equ        READ,           0000        // read and do not create file
+.equ        WRITE,          0101        // write and create file
+.equ        RW_______,      0600        // mode (permissions)
 
     .data
 
-szFileIn:       .asciz      "input.txt"     // file name
+szFileIn:       .asciz      "input.txt"     // input file name
 szFileOut:      .asciz      "output.txt"    // file name
-iFD1:           .byte       0               // (FD)
-iFD2:           .byte       0               // (FD)
+iFD:            .byte        0              // file descriptor (fd)
 
-headPtr:        .quad       0
-tailPtr:        .quad       0
+headPtr:        .quad       0           // head pointer
+tailPtr:        .quad       0           // tail pointer
 
-menuBuf:        .skip       2
+menuBuf:        .skip       2           // buffer of the menu input (only a single digit + null)
 
-strMenu1:       .asciz      "Enter menu num: "
-strMenu2:       .asciz      "Enter submenu num: "
+strMenu1:       .asciz      "Enter menu num (1,2,3,4,5,6,7): "
+strMenu2:       .asciz      "Enter submenu num (a, b): "
 
     .text
 
 _start:
-    // openat
-    mov     x0,#DFD         // load DFD into x0              
-    ldr     x1,=szFileIn    // load file name into x1
-    mov     x2,#READ        // load flags into x2
-    mov     x3,#RW_______   // load mode into x3
-
-    mov     x8,#56          // openat
-    svc     0               // system call to openat
-
-    ldr     x1,=iFD1        // load FD into x1
-    strb    w0,[x1]         // store returned FD value into FD
-
-    // openat
-    mov     x0,#DFD         // load DFD into x0              
-    ldr     x1,=szFileOut   // load file name into x1
-    mov     x2,#WRITE       // load flags into x2
-    mov     x3,#RW_______   // load mode into x3
-
-    mov     x8,#56          // openat
-    svc     0               // system call to openat
-
-    ldr     x1,=iFD2        // load FD into x1
-    strb    w0,[x1]         // store returned FD value into FD
-
-//************************************************************************************************
-start_menu:
+// get menu number and branch to that option
     ldr     x0,=strMenu1
     bl      putstring
 
@@ -57,37 +32,41 @@ start_menu:
     bl      getstring
 
     ldr     x0,=menuBuf
-    bl      ascint64
+    ldrb    w0,[x0]    
 
-    cmp     x0,#1
+    cmp     x0,#'1'
     beq     option_1
 
-    cmp     x0,#2
+    cmp     x0,#'2'
     beq     option_2
 
-    cmp     x0,#3
+    cmp     x0,#'3'
     beq     option_3
 
-    cmp     x0,#4
+    cmp     x0,#'4'
     beq     option_4
 
-    cmp     x0,#5
+    cmp     x0,#'5'
     beq     option_5
 
-    cmp     x0,#6
+    cmp     x0,#'6'
     beq     option_6
 
-    cmp     x0,#7
+    cmp     x0,#'7'
     beq     option_7
 
-    b       start_menu    
+    b       _start  
 
+// print list
+//***********************************************************************************************************
 option_1:
     ldr     x0,=headPtr
     bl      print_list
 
-    b       start_menu    
+    b       _start
 
+// input to end of list
+//********************************************
 option_2:
     ldr     x0,=strMenu2
     bl      putstring
@@ -97,48 +76,76 @@ option_2:
     bl      getstring
 
     ldr     x0,=menuBuf
-    bl      ascint64
+    ldrb    w0,[x0]  
 
-    cmp     x0,#1
+    cmp     x0,#'a'
     beq     option_2a
 
-    cmp     x0,#2
+    cmp     x0,#'b'
     beq     option_2b
 
-    b       option_2
+    b       _start
 
+// keyboard
+//*********************
 option_2a:
     ldr     x0,=headPtr
     ldr     x1,=tailPtr
     bl      insert_into_kbd
 
-    b       start_menu    
+    b       _start
 
+// file
+//*********************
 option_2b:
-    ldr     x0,=iFD1
-    ldrb    w0,[x0]
+    mov     x0,#DFD         // load DFD into x0              
+    ldr     x1,=szFileIn    // load file name into x1
+    mov     x2,#READ        // load flags into x2
+    mov     x3,#RW_______   // load mode into x3
+
+    mov     x8,#56          // openat
+    svc     0               // system call to openat
+
+    ldr     x1,=iFD         // load FD into x1
+    strb    w0,[x1]         // store returned FD value into FD
+
     ldr     x1,=headPtr
     ldr     x2,=tailPtr
     bl      insert_into_file
 
-    b       start_menu    
+    ldr     x0,=iFD         // load FD into x0
+    ldrb    w0,[x0]         // load value of FD into w0
+    mov     x8,#57          // close
+    svc     0               // system call to close
 
+    b       _start  
+
+// delete node given #
+//********************************************
 option_3:
 
-    b       start_menu    
+    b       _start
 
+// edit string in node given #
+//********************************************
 option_4:
 
-    b       start_menu    
+    b       _start
 
+// search strings based on given substring
+//********************************************
 option_5:
 
-    b       start_menu    
+    b       _start
 
+// write strings to output file
+//********************************************
 option_6:
 
-    b       start_menu    
+    b       _start
 
+// free list and exit program
+//********************************************
 option_7:
     ldr     x0,=headPtr
     bl      free_list
@@ -148,4 +155,3 @@ option_7:
     svc     0
 
     .end
-
