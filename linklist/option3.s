@@ -189,3 +189,46 @@ delete_return:
 
     ldr     LR,[SP],#16     // pop LR off the stack
     ret                     // return to caller
+
+/*
+search_for - given an index of a node, return its address
+
+parameters:
+x0 - node index
+x1 - headPtr
+
+return:
+x0 - node address
+if there is no node with the index, 0 is returned to x0
+
+All registers are preserved except x1 and x2
+*/
+
+search_for:
+    str     LR,[SP,#-16]!   // push LR to the stack
+
+    ldr     x1,[x1]         // load head into x0
+
+search_for_loop:
+    cmp     x0,#0               // if we have reached the node we are looking for
+    beq     search_for_return   // end loop
+
+    cmp     x1,#0               // if head/next pointer == null
+    beq     search_for_return   // end loop
+
+    ldr     x2,[x1,#8]          // load the pointer to the next node in x2
+    mov     x1,x2               // move the next node into x1 so we can get its next pointer in the next iteration
+
+    sub     x0,x0,#1            // decrement loop control
+    b       search_for_loop     // continue loop
+
+search_for_return:
+    mov     x0,x1           // move the address of the found node into the return register x0
+                            // if there is no node at that index, return 0
+                            // headPtr initialized to 0 and null tail pointer = 0, so all cases are covered
+
+    ldr     LR,[SP],#16     // pop LR off the stack
+    ret                     // return to caller
+
+    .end
+    
