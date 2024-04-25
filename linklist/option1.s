@@ -10,30 +10,29 @@ chBB:       .byte       93
     .text
 
 /*
-print_list - insert string into linked list
+print_list - print all strings in linked list
 
-parameters:
-x0 - headPtr
+must have access to headPtr adn numBuf
 
 int64asc, putstring, putch - registers x0 - x10 are not preserved
- */
+*/
 
 print_list:
     str     LR,[SP,#-16]!   // push LR to the stack
-    
+
+    ldr     x0,=headPtr     // load head pinter into x0
     ldr     x0,[x0]         // load head into x0
 
-    mov     x1,#0           // initialize index counter to 0
+    mov     x19,#0          // initialize index counter to 0
 
 loop:
     cmp     x0,#0           // if head == null, there are no nodes, so
     beq     print_return    // end loop
 
-    str     x1,[SP,#-16]!   // push index counter to the stack
-    str     x0,[SP,#-16]!   // push current node address to the stack
-    str     x0,[SP,#-16]!   // push current node address to the stack again
+    ldr     x20,[x0]        // load the string of the current node into x20
+    ldr     x21,[x0,#8]     // load the next node into x21
 
-    mov     x0,x1           // move index coutner to x0
+    mov     x0,x19          // move index coutner to x0
     ldr     x1,=numBuf      // load number numBuf into x1
     bl      int64asc        // store index counter as a string in the number numBuf
 
@@ -49,15 +48,11 @@ loop:
     ldr     x0,=chSP        // load space into x0
     bl      putch           // output space
 
-    ldr     x0,[SP],#16     // pop current node address off the stack
-    ldr     x0,[x0]         // load the string of the current node
+    mov     x0,x20          // move the string of the current node into x0
     bl      putstring       // output this string
 
-    ldr     x0,[SP],#16     // pop current node address off the stack
-    ldr     x0,[x0,#8]      // load the next node into x0
-
-    ldr     x1,[SP],#16     // pop the index counter off the stack
-    add     x1,x1,#1        // increment the index counter
+    mov     x0,x21          // move next node into x0
+    add     x19,x19,#1      // increment the index counter
 
     b       loop            // continue loop
 

@@ -1,12 +1,13 @@
     .global _start
     .global headPtr
     .global tailPtr
+    .global iFD
 
 .equ        DFD,            -100        // directory file descriptor (DFD)
 .equ        READ,           0000        // read and do not create file
 .equ        WRITE,          0101        // write and create file
 .equ        RW_______,      0600        // mode (permissions)
-.equ        bufSize,        21
+.equ        menuBufSize,        21
 
     .data
 
@@ -17,7 +18,7 @@ iFD:            .byte       0              // file descriptor (fd)
 headPtr:        .quad       0           // head pointer
 tailPtr:        .quad       0           // tail pointer
 
-buffer:         .skip       21           // buffer of the menu input (only a single digit + null)
+menuBuf:        .skip       21           // menuBuf of the menu input (only a single digit + null)
 
 strMenu1:       .asciz      "Enter menu num (1,2,3,4,5,6,7): "
 strMenu2:       .asciz      "Enter submenu num (a, b): "
@@ -29,11 +30,11 @@ _start:
     ldr     x0,=strMenu1
     bl      putstring
 
-    ldr     x0,=buffer
-    ldr     x1,=bufSize
+    ldr     x0,=menuBuf
+    ldr     x1,=menuBufSize
     bl      getstring
 
-    ldr     x0,=buffer
+    ldr     x0,=menuBuf
     ldrb    w0,[x0]    
 
     cmp     x0,#'1'
@@ -62,7 +63,6 @@ _start:
 // print list
 //***********************************************************************************************************
 option_1:
-    ldr     x0,=headPtr
     bl      print_list
 
     b       _start
@@ -73,11 +73,11 @@ option_2:
     ldr     x0,=strMenu2
     bl      putstring
 
-    ldr     x0,=buffer
-    ldr     x1,=bufSize
+    ldr     x0,=menuBuf
+    ldr     x1,=menuBufSize
     bl      getstring
 
-    ldr     x0,=buffer
+    ldr     x0,=menuBuf
     ldrb    w0,[x0]  
 
     cmp     x0,#'a'
@@ -91,8 +91,6 @@ option_2:
 // keyboard
 //*********************
 option_2a:
-    ldr     x0,=headPtr
-    ldr     x1,=tailPtr
     bl      insert_into_kbd
 
     b       _start
@@ -111,8 +109,6 @@ option_2b:
     ldr     x1,=iFD         // load FD into x1
     strb    w0,[x1]         // store returned FD value into FD
 
-    ldr     x1,=headPtr
-    ldr     x2,=tailPtr
     bl      insert_into_file
 
     ldr     x0,=iFD         // load FD into x0
@@ -138,6 +134,7 @@ option_4:
 // search strings based on given substring
 //********************************************
 option_5:
+    bl      print_str_sub
 
     b       _start
 
@@ -150,7 +147,6 @@ option_6:
 // free list and exit program
 //********************************************
 option_7:
-    ldr     x0,=headPtr
     bl      free_list
 
     mov     x0,#0               // end sequence

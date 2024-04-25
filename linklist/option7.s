@@ -26,6 +26,7 @@ free_list:
     str     X28,[SP, #-16]!
     str     X29,[SP, #-16]!
 
+    ldr     x0,=headPtr
     ldr     x0,[x0]         // load head into x0
 
 free_loop:
