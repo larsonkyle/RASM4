@@ -1,21 +1,23 @@
     .global _start
-    .global menuBuf
+    .global headPtr
+    .global tailPtr
 
 .equ        DFD,            -100        // directory file descriptor (DFD)
 .equ        READ,           0000        // read and do not create file
 .equ        WRITE,          0101        // write and create file
 .equ        RW_______,      0600        // mode (permissions)
+.equ        bufSize,        21
 
     .data
 
 szFileIn:       .asciz      "input.txt"     // input file name
 szFileOut:      .asciz      "output.txt"    // file name
-iFD:            .byte        0              // file descriptor (fd)
+iFD:            .byte       0              // file descriptor (fd)
 
 headPtr:        .quad       0           // head pointer
 tailPtr:        .quad       0           // tail pointer
 
-menuBuf:        .skip       2           // buffer of the menu input (only a single digit + null)
+buffer:         .skip       21           // buffer of the menu input (only a single digit + null)
 
 strMenu1:       .asciz      "Enter menu num (1,2,3,4,5,6,7): "
 strMenu2:       .asciz      "Enter submenu num (a, b): "
@@ -27,11 +29,11 @@ _start:
     ldr     x0,=strMenu1
     bl      putstring
 
-    ldr     x0,=menuBuf
-    mov     x1,#2
+    ldr     x0,=buffer
+    ldr     x1,=bufSize
     bl      getstring
 
-    ldr     x0,=menuBuf
+    ldr     x0,=buffer
     ldrb    w0,[x0]    
 
     cmp     x0,#'1'
@@ -71,11 +73,11 @@ option_2:
     ldr     x0,=strMenu2
     bl      putstring
 
-    ldr     x0,=menuBuf
-    mov     x1,#2
+    ldr     x0,=buffer
+    ldr     x1,=bufSize
     bl      getstring
 
-    ldr     x0,=menuBuf
+    ldr     x0,=buffer
     ldrb    w0,[x0]  
 
     cmp     x0,#'a'
@@ -123,6 +125,7 @@ option_2b:
 // delete node given #
 //********************************************
 option_3:
+    bl      delete_node
 
     b       _start
 

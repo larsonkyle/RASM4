@@ -1,11 +1,12 @@
     .global insert_into_kbd
     .global insert_into_file
+    .global buf_clear
 
-.equ        bufSize,    256
+.equ        bufSize,    100
 
     .data
 
-buffer:     .skip       256
+buffer:     .skip       100
 
     .text
 
@@ -95,8 +96,8 @@ insert_into_file_loop:
     str     x2,[SP,#-16]!   // push FD to the stack
 
     ldr     x1,=buffer      // load file buffer into x1
-    mov     x2,#0           // move #0 into x1
-    str     x2,[x1]         // store #0 into file buffer - clear file buffer
+    bl      buf_clear
+    ldr     x1,=buffer
     bl      getline
 
     ldr     x0,=buffer
@@ -225,4 +226,27 @@ getchar:
 
     ldr     LR,[SP],#16     // pop LR off the stack
     ret                     // return to caller
-    
+
+
+
+buf_clear:
+    str     LR,[SP,#-16]!   // push LR to the stack
+    mov     x3,#0
+    ldr     x4,=bufSize
+
+buf_clear_loop:
+    cmp     x3,x4
+    beq     buf_clear_return
+
+    mov     w2,#0
+    strb    w2,[x1],#1
+
+    add     x3,x3,#1
+
+    b       buf_clear_loop
+
+buf_clear_return:
+    ldr     LR,[SP],#16     // pop LR off the stack
+    ret
+ 
+.end
