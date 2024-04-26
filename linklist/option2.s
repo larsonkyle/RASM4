@@ -98,7 +98,9 @@ insert_into_file_loop:
     ldr     x0,=addStrBuf       // load string buffer into x0
     ldrb    w1,[x0]             // load first byte from string buffer into x1
     cmp     w1,#0               // if byte from string buffer == 0,
-    beq     insert_into_file_return     // string is empty at the end of the file, so don't insert the string into the list
+    beq     insert_into_file_return     // string is empty at the end of the file, so don't append and insert the string into the list
+
+    bl      append_line_feed        // append carriage return and line feed to the string buffer
 
     bl      insert_into             // insert the string into the list
 
@@ -149,17 +151,9 @@ getline_loop:
     beq     getline_return              // if char == line feed, then we have reached end of line, so go to return statement
 
     cmp     x2,#0                       // compare svc control to #0
-    beq     getline_done_file_end       // if svc control == #0, then we have reached the end of the file, so return
+    beq     getline_return              // if svc control == #0, then we have reached the end of the file, so return
 
     b       getline_loop                // else, continue reading in characters
-
-getline_done_file_end:
-    ldr     x0,=addStrBuf       // load string buffer into x1
-    ldrb    w1,[x0]             // load first byte from string buffer into x1
-    cmp     w1,#0               // if byte from string buffer == 0,
-    beq     getline_return      // the line is empty, so don't append a line feed to the string buffer
-
-    bl      append_line_feed    // append a line feed to the string buffer
 
 getline_return:
     ldr     LR,[SP],#16     // pop LR off the stack
@@ -316,7 +310,8 @@ insert_into_return:
     ret                     // return to caller
 
 /*
-append_line_feed() - append line feed to the end of the buffer
+append_line_feed() - append carriage return and line feed into string buffer
+we are working with windows input (\r\n), so to make all line ends constant, append \r\n
 
 parameters:
 x0 - string buffer
@@ -332,7 +327,7 @@ append_line_feed:
     str     LR,[SP,#-16]!   // push LR to the stack
 
     mov     x1,x0           // move the string into x1
-    add     x1,x1,#1        // increment the address of the string (forward pointer)
+    add     x1,x1,#1         // increment the address of the string (forward pointer)
     mov     x2,x0           // move the string into x2 and don't increment address (back pointer)
 
 append_line_feed_loop:
@@ -350,9 +345,12 @@ check_line_feed:
 
     cmp     w4,#10                      // if back pointer == line feed
     beq     append_line_feed_return     // no need to append line feed
+    
+    mov     w4,#13                  // move carriage return into w4 (working with windows new line - \r\n)
+    strb    w4,[x2],#1              // store carriage return into string buffer
 
     mov     w4,#10                  // move line feed into w4
-    strb    w4,[x2],#1              // store line feed into string buffer
+    strb    w4,[x2]                 // store line feed into string buffer
 
 append_line_feed_return:
 
