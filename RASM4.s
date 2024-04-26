@@ -5,7 +5,7 @@
 
 .equ        DFD,            -100        // directory file descriptor (DFD)
 .equ        READ,           0000        // read and do not create file
-.equ        WRITE,          0101        // write and create file
+.equ        WRITE,         01101        // write and create file
 .equ        RW_______,      0600        // mode (permissions)
 .equ        menuBufSize,        21
 
@@ -141,6 +141,23 @@ option_5:
 // write strings to output file
 //********************************************
 option_6:
+    mov     x0,#DFD         // load DFD into x0              
+    ldr     x1,=szFileOut   // load file name into x1
+    mov     x2,#WRITE       // load flags into x2
+    mov     x3,#RW_______   // load mode into x3
+
+    mov     x8,#56          // openat
+    svc     0               // system call to openat
+
+    ldr     x1,=iFD         // load FD into x1
+    strb    w0,[x1]         // store returned FD value into FD
+
+    bl      save_list
+
+    ldr     x0,=iFD         // load FD into x0
+    ldrb    w0,[x0]         // load value of FD into w0
+    mov     x8,#57          // close
+    svc     0               // system call to close
 
     b       _start
 

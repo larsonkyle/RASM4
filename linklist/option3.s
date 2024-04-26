@@ -15,6 +15,15 @@ nodeNum:    .quad       0
 /*
 delete_node() - get an index from the user and delete the node at that index
 
+must have access to:
+headPtr
+tailPtr
+delBuf
+dbDelete
+dbBefore
+dbAfter
+nodeNum
+
 not preserved:
 Only AAPCS registers x19 - x29 are preserved
 */

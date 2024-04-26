@@ -28,4 +28,4 @@ option7.o: linklist/option7.s
 	as -g -o linklist/option7.o linklist/option7.s
 
 clean: 
-	rm driver RASM4.o linklist/option1.o linklist/option2.o linklist/option3.o linklist/option4.o linklist/option5.o linklist/option6.o linklist/option7.o
+	rm driver RASM4.o output.txt linklist/option1.o linklist/option2.o linklist/option3.o linklist/option4.o linklist/option5.o linklist/option6.o linklist/option7.o
