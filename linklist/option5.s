@@ -1,6 +1,11 @@
   .global print_str_sub
 
+  .equ MAX_LEN, 20
+
   .data
+
+strPrompt:    .asciz "Search: "
+strSubstring: .skip  21
 
 numBuf:     .skip       21
 chSP:       .byte       32
@@ -20,14 +25,38 @@ print_str_sub:
   ldr     x0,=headPtr     // load head pinter into x0
   ldr     x0,[x0]         // load head into x0
 
-  mov     x19,#0          // initialize index counter to 0
+  mov     x19,#1          // initialize index counter to 0
 
+
+  //Prompt User for substring to search for  
+  str     X0,[SP,#-16]!   // push Head node to the stack
+
+  ldr     X0,=strPrompt
+  bl      putstring
+
+  ldr     X0,=strSubstring
+  ldr     X1,=MAX_LEN
+  bl      getstring
+
+  ldr     X0, [SP], #16   // pop head off the stack
+  
+  
 loop:
   cmp     x0,#0           // if head == null, there are no nodes, so
-  beq     print_return    // end loop
+  beq     print_return_sub// end loop
 
   ldr     x20,[x0]        // load the string of the current node into x20
   ldr     x21,[x0,#8]     // load the next node into x21
+
+  //call findSubstring
+  mov     X0,X20
+  ldr     X1,=strSubstring
+  bl      findSubstring
+
+  cmp     X0,#0
+  beq     notInSubstring
+  
+// ---
 
   mov     x0,x19          // move index coutner to x0
   ldr     x1,=numBuf      // load number numBuf into x1
@@ -48,12 +77,15 @@ loop:
   mov     x0,x20          // move the string of the current node into x0
   bl      putstring       // output this string
 
+// ---
+  notInSubstring:
+
   mov     x0,x21          // move next node into x0
   add     x19,x19,#1      // increment the index counter
 
   b       loop            // continue loop
 
-print_return:
+print_return_sub:
   ldr     LR,[SP],#16     // pop LR off the stack
   ret                     // return to caller 
 
