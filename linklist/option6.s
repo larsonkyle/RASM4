@@ -39,10 +39,12 @@ loop:
 
     b       save_write      // go to writing the string to file
 
+// if there is extra line with no data at end, \r\n is already on the last line of data
+// if there is no extra line, \r\n is appended to the last line of data
 last_line:
     mov     x0,x20          // mov string into x0
     bl      String_length   // get the length of the string and put it into x0
-    sub     x0,x0,#2        // subtract 2 for the added line feed
+    sub     x0,x0,#2        // subtract 2 for the carriage return and line feed 
     mov     x2,x0           // mov string length into x2
 
 save_write:

@@ -55,7 +55,7 @@ delete_node:
 
     bl      search_for          // get the address of the node we are deleting
     cmp     x0,#0               // if we get #0 returned, that means the node does not exist
-    beq     _start              // handle the error
+    beq     delete_return       // handle the error
 
     ldr     x1,=dbDelete        // load the node to delete into x1
     str     x0,[x1]             // store the returned address into x1
