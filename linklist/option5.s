@@ -25,7 +25,7 @@ print_str_sub:
   ldr     x0,=headPtr     // load head pinter into x0
   ldr     x0,[x0]         // load head into x0
 
-  mov     x19,#1          // initialize index counter to 0
+  mov     x19,#0          // initialize index counter to 0
 
 
   //Prompt User for substring to search for  
