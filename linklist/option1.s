@@ -7,6 +7,8 @@ chSP:       .byte       32
 chFB:       .byte       91
 chBB:       .byte       93
 
+strEmpty:   .asciz      "Result: [EMPTY]\n"
+
     .text
 
 /*
@@ -22,6 +24,9 @@ print_list:
 
     ldr     x0,=headPtr     // load head pinter into x0
     ldr     x0,[x0]         // load head into x0
+
+    cmp     x0,#0
+    beq     list_empty
 
     mov     x19,#0          // initialize index counter to 0
 
@@ -57,6 +62,13 @@ loop:
     b       loop            // continue loop
 
 print_return:
+    ldr     LR,[SP],#16     // pop LR off the stack
+    ret                     // return to caller
+
+list_empty:
+    ldr     x0,=strEmpty    //Print EMPTY as result, if list empty
+    bl      putstring       //Output String
+
     ldr     LR,[SP],#16     // pop LR off the stack
     ret                     // return to caller
 
