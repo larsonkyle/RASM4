@@ -2,6 +2,7 @@
     .global insert_into_file
     .global insert_into
     .global append_line_feed
+    .global buf_clear
 
 .equ        addStrBufSize,    100
 
@@ -91,6 +92,8 @@ insert_into_file:
     str     X29,[SP, #-16]!
 
 insert_into_file_loop:
+    ldr     x0,=addStrBuf       // load string buffer into x0
+    ldr     x1,=addStrBufSize   // load addStrBufSize into x1
     bl      buf_clear           // clear the string buffer
 
     bl      getline             // get a line from the file and put it into string buffer
@@ -193,9 +196,9 @@ getchar:
 buf_clear()
 clear all bytes the string bffer
 
-must have access to:
-addStrBuf
-addStrBufSize
+parameters:
+x0 - buffer
+x1 - buffer size
 
 not preserved:
 x0, x1, x2, x3
@@ -203,10 +206,7 @@ x0, x1, x2, x3
 
 buf_clear:
     str     LR,[SP,#-16]!       // push LR to the stack
-
-    ldr     x0,=addStrBuf       // load string buffer into x0
-    mov     x1,#0               // initialize counter into #0
-    ldr     x2,=addStrBufSize   // load addStrBufSize into x2
+    mov     x2,#0               // initialize counter into #2
 
 buf_clear_loop:
     cmp     x1,x2               // if counter == addStrBufSize,
@@ -215,7 +215,7 @@ buf_clear_loop:
     mov     w3,#0               // load #0 into w3
     strb    w3,[x0],#1          // stoer #0 into the next byte of the string buffer
 
-    add     x1,x1,#1            // increment counter
+    add     x2,x2,#1            // increment counter
 
     b       buf_clear_loop      // continue loop
 

@@ -36,6 +36,9 @@ chLF:           .byte       0xA
 
 main: //For GDB to know where the program starts
 _start:
+    b       clearScreen
+
+start_program:
     //Output Header
     ldr     x0,=strHeader
     bl      putstring
@@ -109,7 +112,6 @@ option_1:
     ldr     x1,=menuBufSize
     bl      getstring
 
-    mov X19,#0
     b   clearScreen 
 
 
@@ -132,7 +134,6 @@ option_2:
     cmp     x0,#'b'
     beq     option_2b
 
-    mov X19,#0
     b   clearScreen
 
 
@@ -141,7 +142,6 @@ option_2:
 option_2a:
     bl      insert_into_kbd
 
-    mov X19,#0
     b   clearScreen
 
 // file
@@ -165,7 +165,6 @@ option_2b:
     mov     x8,#57          // close
     svc     0               // system call to close
 
-    mov X19,#0
     b   clearScreen
 
 // delete node given #
@@ -173,16 +172,14 @@ option_2b:
 option_3:
     bl      delete_node
 
-    mov X19,#0
     b   clearScreen
 
 // edit string in node given #
 //********************************************
 option_4:
+    bl      edit_string
 
-   //TODO: ADD CLEAR SCREEN INSTEAD OF BRANCH TO START, IF NEEDED
-
-    b       _start
+    b   clearScreen
 
 // search strings based on given substring
 //********************************************
@@ -196,9 +193,7 @@ option_5:
     ldr     x1,=menuBufSize
     bl      getstring   
 
-    mov X19,#0
     b   clearScreen
-
 
 // write strings to output file
 //********************************************
@@ -221,7 +216,6 @@ option_6:
     mov     x8,#57          // close
     svc     0               // system call to close
 
-    mov X19,#0
     b   clearScreen
 
 // free list and exit program
@@ -235,6 +229,9 @@ option_7:
 
 
 clearScreen:
+    mov X19,#0
+
+clearScreen_loop:
   //Just print a million new lines to clear screen
   ldr X0,=chLF
   bl  putch
@@ -242,9 +239,8 @@ clearScreen:
   add X19,X19,#1
   
   cmp X19, #46   //45 newlines to be exact
-  blt clearScreen
+  blt clearScreen_loop
 
-  b   _start
-
+  b   start_program
 
   .end

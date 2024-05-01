@@ -1,4 +1,5 @@
     .global delete_node
+    .global search_for
 
 .equ        delBufSize,    21
 
