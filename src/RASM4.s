@@ -51,7 +51,7 @@ start_program:
     bl      putstring
 
 // ---
-    //INSERT MEMORY COUNT HERE
+    bl      Mem_Count 
 // ---
 
     ldr     x0,=strMenuBytes2

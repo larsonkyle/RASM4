@@ -29,13 +29,16 @@ Node_Count:
   cmp  x0,#0            // check if 0
   beq  Node_Return      // if 0 then return
 
+ 
 Node_Loop:
-  ldr  x0,[x0,#8]!      // move address to nextPtr then load the nextPtr
+  add  x0,x0,#8         // MANUALLY add 8 to the address cause apparently postincrementing the address in the previous line is illegal to the entire world including the assembler and valgrind !!!!
+  ldr  x0,[x0]          // load the nextPtr
 
+  add  x1,x1,#1          // increment counter
+ 
   cmp  x0,#0            // check if 0
   beq  Node_Return      // if 0 then return
 
-  add  x1,x1,#1          // increment counter
   b    Node_Loop        // repeat algorithm
 
 Node_Return:
