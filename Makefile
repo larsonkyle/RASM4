@@ -1,7 +1,7 @@
 all: RASM4
 
 RASM4: RASM4.o option1.o option2.o option3.o option4.o option5.o option6.o option7.o
-	ld -o RASM4 -lc objfiles/*.o src/RASM4.o src/MenuOptions/*.o
+	ld -o RASM4 -lc objfiles/*.o src/RASM4.o src/MenuOptions/*.o src/ListCounter/*.o
 
 RASM4.o: src/RASM4.s 
 	as -g -o src/RASM4.o src/RASM4.s

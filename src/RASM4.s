@@ -61,7 +61,7 @@ start_program:
     bl      putstring
 
 // ---
-    //INSERT NODE COUNT HERE
+    bl      Node_Count
 // ---
 
     ldr     x0,=chLF
