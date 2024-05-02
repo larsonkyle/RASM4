@@ -28,6 +28,10 @@ edit_string:
     str     X28,[SP, #-16]!     // preserved required AAPCS registers
     str     X29,[SP, #-16]!     // preserved required AAPCS registers
 
+    ldr     x0,=editBuf         //load editbuf
+    ldr     x1,=editBufSize     //load size of editbuf
+    bl      buf_clear           //branch to buf_clear
+
     ldr     x0,=strPrompt1      // load user prompt
     bl      putstring           // output user prompt
 

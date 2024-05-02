@@ -5,7 +5,7 @@
   .data
 
 strPrompt:    .asciz "Search: "
-strEmpty:     .asciz "Result: [EMPTY]\n"
+strEmpty:     .asciz "[EMPTY]\n"
 strSubstring: .skip  21
 
 numBuf:     .skip       21
@@ -38,6 +38,10 @@ print_str_sub:
 
   ldr     X0,=strPrompt   // Load User Prompt
   bl      putstring       // Output User Prompt
+
+  ldr     X0,=strSubstring// Load buffer address
+  ldr     X1,=MAX_LEN     // #define length of buffer address 
+  bl      buf_clear       //branch to buf_clear
 
   ldr     X0,=strSubstring// Load buffer address
   ldr     X1,=MAX_LEN     // #define length of buffer address 

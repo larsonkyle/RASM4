@@ -7,7 +7,7 @@ chSP:       .byte       32
 chFB:       .byte       91
 chBB:       .byte       93
 
-strEmpty:   .asciz      "Result: [EMPTY]\n"
+strEmpty:   .asciz      "[EMPTY]\n"
 
     .text
 

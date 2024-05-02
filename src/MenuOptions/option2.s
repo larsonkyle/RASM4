@@ -35,10 +35,14 @@ insert_into_kbd:
     str     X23,[SP, #-16]! 	// preserved required AAPCS registers
     str     X24,[SP, #-16]! 	// preserved required AAPCS registers
     str     X25,[SP, #-16]! 	// preserved required AAPCS registers
-    str     X26,[SP, #-16]!	// preserved required AAPCS registers
+    str     X26,[SP, #-16]!	    // preserved required AAPCS registers
     str     X27,[SP, #-16]! 	// preserved required AAPCS registers
     str     X28,[SP, #-16]! 	// preserved required AAPCS registers
     str     X29,[SP, #-16]! 	// preserved required AAPCS registers
+
+    ldr     x0,=addStrBuf      		// load string buffer into x0
+    ldr     x1,=addStrBufSize  		// load addStrBufSize into x1
+    bl      buf_clear          		// clear the string buffer
 
     ldr     x0,=strPrompt   	// load user prompt
     bl      putstring      	// output user prompt
