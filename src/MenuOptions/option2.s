@@ -8,6 +8,7 @@
 
     .data
 
+strPrompt:     .asciz      "Enter String: "
 addStrBuf:     .skip       100
 
     .text
@@ -38,6 +39,9 @@ insert_into_kbd:
     str     X27,[SP, #-16]!
     str     X28,[SP, #-16]!
     str     X29,[SP, #-16]!
+
+    ldr     x0,=strPrompt       // load user prompt
+    bl      putstring           // output user prompt
 
     ldr     x0,=addStrBuf       // load buffer into x0
     ldr     x1,=addStrBufSize   // load the buffer size into x1

@@ -5,6 +5,8 @@
 
     .data
 
+strPrompt:  .asciz      "Enter Index to Delete: "
+
 delBuf:     .skip       21
 dbDelete:   .quad       0
 dbBefore:   .quad       0
@@ -33,16 +35,19 @@ delete_node:
     str     LR,[SP,#-16]!       // push LR to the stack
     
     str     X19,[SP, #-16]!     // preserved required AAPCS registers
-    str     X20,[SP, #-16]!
-    str     X21,[SP, #-16]!
-    str     X22,[SP, #-16]!
-    str     X23,[SP, #-16]!
-    str     X24,[SP, #-16]!
-    str     X25,[SP, #-16]!
-    str     X26,[SP, #-16]!
-    str     X27,[SP, #-16]!
-    str     X28,[SP, #-16]!
-    str     X29,[SP, #-16]!
+    str     X20,[SP, #-16]!     // preserved required AAPCS registers
+    str     X21,[SP, #-16]!     // preserved required AAPCS registers
+    str     X22,[SP, #-16]!     // preserved required AAPCS registers
+    str     X23,[SP, #-16]!     // preserved required AAPCS registers
+    str     X24,[SP, #-16]!     // preserved required AAPCS registers
+    str     X25,[SP, #-16]!     // preserved required AAPCS registers
+    str     X26,[SP, #-16]!     // preserved required AAPCS registers
+    str     X27,[SP, #-16]!     // preserved required AAPCS registers
+    str     X28,[SP, #-16]!     // preserved required AAPCS registers
+    str     X29,[SP, #-16]!     // preserved required AAPCS registers
+
+    ldr     x0,=strPrompt       // load user prompt
+    bl      putstring           // output user prompt
 
     ldr     x0,=delBuf          // load delete buffer into x0
     ldr     x1,=delBufSize      // load delete buffer size into x1
@@ -182,14 +187,14 @@ delete_tail:
 
 delete_return:
     ldr     X29,[SP],#16        // preserved required AAPCS registers
-    ldr     X28,[SP],#16
-    ldr     X27,[SP],#16
-    ldr     X26,[SP],#16
-    ldr     X25,[SP],#16
-    ldr     X24,[SP],#16
-    ldr     X23,[SP],#16
-    ldr     X22,[SP],#16
-    ldr     X21,[SP],#16
+    ldr     X28,[SP],#16        // preserved required AAPCS registers
+    ldr     X27,[SP],#16     	// preserved required AAPCS registers
+    ldr     X26,[SP],#16     	// preserved required AAPCS registers
+    ldr     X25,[SP],#16     	// preserved required AAPCS registers
+    ldr     X24,[SP],#16     	// preserved required AAPCS registers
+    ldr     X23,[SP],#16     	// preserved required AAPCS registers
+    ldr     X22,[SP],#16     	// preserved required AAPCS registers
+    ldr     X21,[SP],#16     	// preserved required AAPCS registers
     ldr     X20,[SP],#16
     ldr     X19,[SP],#16
 
