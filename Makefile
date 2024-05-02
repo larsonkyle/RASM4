@@ -1,6 +1,6 @@
 all: RASM4
 
-RASM4: RASM4.o option1.o option2.o option3.o option4.o option5.o option6.o option7.o
+RASM4: RASM4.o src/MenuOptions/option1.o src/MenuOptions/option2.o src/MenuOptions/option3.o src/MenuOptions/option4.o src/MenuOptions/option5.o src/MenuOptions/option6.o src/MenuOptions/option7.o src/ListCounter/Mem_Count.o src/ListCounter/Node_Count.o 
 	ld -o RASM4 -lc objfiles/*.o src/RASM4.o src/MenuOptions/*.o src/ListCounter/*.o
 
 RASM4.o: src/RASM4.s 
@@ -27,5 +27,11 @@ option6.o: src/MenuOptions/option6.s
 option7.o: src/MenuOptions/option7.s
 	as -g -o src/MenuOptions/option7.o src/MenuOptions/option7.s
 
+Mem_Count.o: src/ListCounter/Mem_Count.s
+	as -g -o src/ListCounter/Mem_Count.o src/ListCounter/Mem_Count.s
+
+Node_Count.o: src/ListCounter/Node_Count.s
+	as -g -o src/ListCounter/Node_Count.o src/ListCounter/Node_Count.s
+
 clean: 
-	rm RASM4 src/*.o src/MenuOptions/*.o output.txt	
+	rm RASM4 src/*.o src/MenuOptions/*.o src/ListCounter/*.o output.txt
