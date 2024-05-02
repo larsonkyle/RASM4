@@ -3,15 +3,15 @@
     .global tailPtr
     .global iFD
 
-.equ        DFD,            -100        // directory file descriptor (DFD)
-.equ        READ,           0000        // read and do not create file
-.equ        WRITE,         01101        // write and create file
-.equ        RW_______,      0600        // mode (permissions)
+.equ        DFD,            -100           // directory file descriptor (DFD)
+.equ        READ,           0000           // read and do not create file
+.equ        WRITE,         01101           // write and create file
+.equ        RW_______,      0600       	   // mode (permissions)
 .equ        menuBufSize,      21
 
     .data
-szFileIn:       .asciz      "input.txt"    // input file name
-szFileOut:      .asciz      "output.txt"   // file name
+szFileIn:       .skip      21              // input  file name
+szFileOut:      .skip      21              // output file name
 iFD:            .byte       0              // file descriptor (fd)
 
 headPtr:        .quad       0              // head pointer
@@ -19,6 +19,7 @@ tailPtr:        .quad       0              // tail pointer
 
 menuBuf:        .skip       21             // menuBuf of the menu input (only a single digit + null)
 
+//Menu Prompts
 strHeader:      .asciz      "Contributers: Kyle Larson & Andrew Maciborski\nProject     : RASM4\nClass       : CS3B\nProfessor   : Dr.Barnett\nGithub      : https://github.com/larsonkyle/RASM4\n\n\n\n"
 
 strMenu1:       .asciz      "		 RASM4 TEXT EDITOR\n"
@@ -29,6 +30,9 @@ strMenu2:       .asciz      "<1> View all strings\n\n<2> Add string\n    <a> fro
 strMenu3:       .asciz      "\n\n<2> Add String\n    <a> from Keyboard\n    <b> from File.\n"
 
 strPause:       .asciz      "\n		PRESS A KEY TO CONTINUE: "
+
+strFilePrompt:  .asciz      "Enter File name: "
+strFileError:   .asciz      "\nERROR: File Does Not Exist.\n"
 
 chLF:           .byte       0xA
 
@@ -147,6 +151,15 @@ option_2a:
 // file
 //*********************
 option_2b:
+    //EC:   LET USER CHOOSE OUTPUT NAME
+    ldr     x0,=strFilePrompt	// load file name prompt
+    bl      putstring		// call putstring 
+
+    ldr     x0,=szFileIn	// load file name for output
+    ldr     x1,=menuBufSize	// load input buffer size
+    bl      getstring		// call getstring
+    // ---
+
     mov     x0,#DFD         	// load DFD into x0              
     ldr     x1,=szFileIn    	// load file name into x1
     mov     x2,#READ        	// load flags into x2
@@ -154,6 +167,10 @@ option_2b:
 
     mov     x8,#56          	// openat
     svc     0               	// system call to openat
+
+    //EC:   Handle error for if file DNE
+    cmp     x0,#0               // check if file exists
+    blt     File_Error          // if file DNE, branch to error message and restart menu
 
     ldr     x1,=iFD         	// load FD into x1
     strb    w0,[x1]         	// store returned FD value into FD
@@ -165,7 +182,7 @@ option_2b:
     mov     x8,#57          	// close
     svc     0               	// system call to close
 
-    b   clearScreen
+    b   clearScreen		// clear screen and restart menu
 
 // delete node given #
 //********************************************
@@ -198,6 +215,15 @@ option_5:
 // write strings to output file
 //********************************************
 option_6:
+    //EC:   LET USER CHOOSE OUTPUT NAME
+    ldr     x0,=strFilePrompt	// load file name prompt
+    bl      putstring		// call putstring
+
+    ldr     x0,=szFileOut	// load file name for output
+    ldr     x1,=menuBufSize	// load input buffer size
+    bl      getstring		// call getstring
+    // ---
+
     mov     x0,#DFD         	// load DFD into x0              
     ldr     x1,=szFileOut   	// load file name into x1
     mov     x2,#WRITE       	// load flags into x2
@@ -227,6 +253,18 @@ option_7:
     mov     X8,#93		// end sequence
     svc     0			// end sequence
 
+File_Error:
+    ldr     x0,=strFileError	// output error message
+    bl      putstring           // call putstring
+
+    ldr     x0,=strPause	// load menu pause message
+    bl      putstring		// call putstring
+    
+    ldr     x0,=menuBuf		// load input buff
+    ldr     x1,=menuBufSize	// load sizeof input buff
+    bl      getstring   	// call getstring
+
+    b   clearScreen		// clear screen and restart menu
 
 clearScreen:
     mov X19,#0			// initialize counter
@@ -239,7 +277,7 @@ clearScreen_loop:
   add X19,X19,#1		// increment counter
   
   cmp X19, #46   		// 45 newlines to be exact
-  blt clearScreen_loop		// if less taht 45 repeat
+  blt clearScreen_loop		// if less than 45 repeat
 
   b   start_program		// restart program
 
