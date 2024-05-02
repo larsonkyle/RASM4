@@ -45,9 +45,9 @@ edit_string:
     ldr     x1,=dbEdit          // load the node to delete into x1
     str     x0,[x1]             // store the returned address into x1
 
-    ldr     x0,=editBuf
-    ldr     x1,=editBufSize
-    bl      buf_clear
+    ldr     x0,=editBuf         //load editbuf
+    ldr     x1,=editBufSize     //load size of editbuf
+    bl      buf_clear           //branch to buf_clear
 
     ldr     x0,=strPrompt2      // load user prompt
     bl      putstring           // output user prompt
@@ -56,23 +56,23 @@ edit_string:
     ldr     x1,=editBufSize     // load delete buffer size into x1
     bl      getstring           // get input from user and store into buffer
 
-    ldr     x0,=editBuf
+    ldr     x0,=editBuf         // load editbuf
     bl      append_line_feed    // append carriage return and line feed to the string buffer
-    bl      String_copy
+    bl      String_copy         // branch to string_copy
 
-    ldr     x1,=stringPtr
-    str     x0,[x1]
+    ldr     x1,=stringPtr       // load stringptr
+    str     x0,[x1]             // store into stringptr
 
-    ldr     x0,=dbEdit
-    ldr     x0,[x0]
-    ldr     x0,[x0]
-    bl      free
+    ldr     x0,=dbEdit          // load dbEdit
+    ldr     x0,[x0]             // dereference dbedit
+    ldr     x0,[x0]             // dereference dbedit
+    bl      free                // free memory
 
-    ldr     x0,=dbEdit
-    ldr     x0,[x0]
-    ldr     x1,=stringPtr
-    ldr     x1,[x1]
-    str     x1,[x0]
+    ldr     x0,=dbEdit          // load dbedit
+    ldr     x0,[x0]             // load contents of dbedit
+    ldr     x1,=stringPtr       // load strinptr
+    ldr     x1,[x1]             // load stringtr
+    str     x1,[x0]             // store string pointer into contents of dbedit
 
 edit_return:
     ldr     X29,[SP],#16    // preserved required AAPCS registers

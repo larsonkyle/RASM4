@@ -15,16 +15,16 @@ free_list:
     str     LR,[SP,#-16]!   // push LR to the stack
 
     str     X19,[SP, #-16]! // preserved required AAPCS registers
-    str     X20,[SP, #-16]!
-    str     X21,[SP, #-16]!
-    str     X22,[SP, #-16]!
-    str     X23,[SP, #-16]!
-    str     X24,[SP, #-16]!
-    str     X25,[SP, #-16]!
-    str     X26,[SP, #-16]!
-    str     X27,[SP, #-16]!
-    str     X28,[SP, #-16]!
-    str     X29,[SP, #-16]!
+    str     X20,[SP, #-16]! // preserved required AAPCS registers
+    str     X21,[SP, #-16]! // preserved required AAPCS registers
+    str     X22,[SP, #-16]! // preserved required AAPCS registers
+    str     X23,[SP, #-16]! // preserved required AAPCS registers
+    str     X24,[SP, #-16]! // preserved required AAPCS registers
+    str     X25,[SP, #-16]! // preserved required AAPCS registers
+    str     X26,[SP, #-16]! // preserved required AAPCS registers
+    str     X27,[SP, #-16]! // preserved required AAPCS registers
+    str     X28,[SP, #-16]! // preserved required AAPCS registers
+    str     X29,[SP, #-16]! // preserved required AAPCS registers
 
     ldr     x0,=headPtr
     ldr     x0,[x0]         // load head into x0
@@ -49,16 +49,16 @@ free_loop:
 
 free_return:
     ldr     X29,[SP],#16    // preserved required AAPCS registers
-    ldr     X28,[SP],#16
-    ldr     X27,[SP],#16
-    ldr     X26,[SP],#16
-    ldr     X25,[SP],#16
-    ldr     X24,[SP],#16
-    ldr     X23,[SP],#16
-    ldr     X22,[SP],#16
-    ldr     X21,[SP],#16
-    ldr     X20,[SP],#16
-    ldr     X19,[SP],#16
+    ldr     X28,[SP],#16    // preserved required AAPCS registers
+    ldr     X27,[SP],#16    // preserved required AAPCS registers
+    ldr     X26,[SP],#16    // preserved required AAPCS registers
+    ldr     X25,[SP],#16    // preserved required AAPCS registers
+    ldr     X24,[SP],#16    // preserved required AAPCS registers
+    ldr     X23,[SP],#16    // preserved required AAPCS registers
+    ldr     X22,[SP],#16    // preserved required AAPCS registers
+    ldr     X21,[SP],#16    // preserved required AAPCS registers
+    ldr     X20,[SP],#16    // preserved required AAPCS registers
+    ldr     X19,[SP],#16    // preserved required AAPCS registers
 
     ldr     LR,[SP],#16     // pop LR off the stack
     ret                     // return to caller

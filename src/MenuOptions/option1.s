@@ -25,8 +25,8 @@ print_list:
     ldr     x0,=headPtr     // load head pinter into x0
     ldr     x0,[x0]         // load head into x0
 
-    cmp     x0,#0
-    beq     list_empty
+    cmp     x0,#0           // cmp head ptr
+    beq     list_empty      // if empty, branch to empty
 
     mov     x19,#0          // initialize index counter to 0
 
