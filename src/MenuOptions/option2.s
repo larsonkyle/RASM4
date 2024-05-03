@@ -350,8 +350,11 @@ append_line_feed_loop:
 
 check_line_feed:
     cmp     w4,#0                   // if backward pointer == 0
-    beq     append_line_feed_return // string is empty, so don't append a line feed
+    bne     append_ch_lf            // string is not empty, so append line feed
 
+    sub     x2,x2,#1                // else string is empty, so append line feed at the spot before null (normally appended at the null - x1 +1 then x2 post inc)
+
+append_ch_lf:
     cmp     w4,#10                  // if back pointer == line feed
     beq     append_line_feed_return // no need to append line feed
     
