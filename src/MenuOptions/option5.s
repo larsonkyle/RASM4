@@ -4,10 +4,13 @@
 
   .data
 
-strPrompt:    .asciz "Search: "
-strEmpty:     .asciz "[EMPTY]\n"
-strSubstring: .skip  21
+strPrompt:     .asciz "Search: "
+strEmpty:      .asciz "[EMPTY]\n"
+strSubstring:  .skip  21
+strEC1:        .asciz "\n("
+strEC2:        .asciz " hits in 1 file of 1 searched)\n"
 
+strBuf:     .skip       21
 numBuf:     .skip       21
 chSP:       .byte       32
 chFB:       .byte       91
@@ -27,11 +30,8 @@ print_str_sub:
   ldr     x0,[x0]         // load head into x0
 
   //Check if list is empty
-  cmp     x0,#0
-  beq     list_empty_sub
-
-  mov     x19,#0          // initialize index counter to 0
-
+  cmp     x0,#0		  // check if head is 0
+  beq     list_empty_sub  // if 0 branch to end
 
   //Prompt User for substring to search for  
   str     X0,[SP,#-16]!   // push Head node to the stack
@@ -47,8 +47,11 @@ print_str_sub:
   ldr     X1,=MAX_LEN     // #define length of buffer address 
   bl      getstring       // Get user input
 
+  bl      outputHits      // Output Notepad++ Results
+
   ldr     X0, [SP], #16   // pop head off the stack
   
+  mov     x19,#0          // initialize index counter to 0
   
 loop:
   cmp     x0,#0           // if head == null, there are no nodes, so
@@ -86,7 +89,7 @@ loop:
   mov     x0,x20          // move the string of the current node into x0
   bl      putstring       // output this string
 
-// --- IF BLOCK
+// --- IF BLOCK END
   notInSubstring:
 
   mov     x0,x21          // move next node into x0
@@ -101,6 +104,64 @@ print_return_sub:
 list_empty_sub:
   ldr     x0,=strEmpty    // Print Empty Result if list empty
   bl      putstring       // Output String
+
+  ldr     LR,[SP],#16     // pop LR off the stack
+  ret                     // return to caller 
+
+
+
+/*
+  Parameters:
+    - X0: Address of full string
+  Return:
+    - Outputs to the console the number of 'hits' found in the current linked list
+*/
+
+outputHits:
+  str     LR,[SP,#-16]!   // push LR to the stack
+ 
+  ldr     x0,=strEC1	  // Output start of hits
+  bl      putstring	  // Output String
+ 
+  ldr     x0,=headPtr     // load head pinter into x0
+  ldr     x0,[x0]         // load head into x0
+
+  mov     x19,#0          // initialize index counter to 0
+
+loopHits:
+  cmp     x0,#0           // if head == null, there are no nodes, so
+  beq     hits_Return	  // end loop
+
+  ldr     x20,[x0]        // load the string of the current node into x20
+  ldr     x21,[x0,#8]     // load the next node into x21
+
+  //call findSubstring
+  mov     X0,X20          // Load String
+  ldr     X1,=strSubstring// Load substring 
+  bl      findSubstring   // Call find substring
+
+  cmp     X0,#0           // If function returned 0, then not in string
+  beq     notInList	  // If not in string, Do not output the string 
+  
+// --- IF BLOCK
+
+  add     x19,x19,#1      // increment the index counter
+  notInList:
+// --- IF BLOCK END
+
+  mov     x0,x21          // move next node into x0
+  b       loopHits        // continue loop
+
+hits_Return:
+  mov     x0,x19
+  ldr     x1,=strBuf
+  bl      int64asc
+
+  ldr     x0,=strBuf
+  bl      putstring
+
+  ldr     x0,=strEC2
+  bl      putstring
 
   ldr     LR,[SP],#16     // pop LR off the stack
   ret                     // return to caller 
